@@ -1,0 +1,216 @@
+// class. student
+package studentapp;
+
+import java.io.Serializable;
+
+public class Student implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private int rollNumber;
+    private String name;
+    private String grade;
+
+    public Student(int rollNumber, String name, String grade) {
+        this.rollNumber = rollNumber;
+        this.name = name;
+        this.grade = grade;
+    }
+
+    public int getRollNumber() {
+        return rollNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getGrade() {
+        return grade;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setGrade(String grade) {
+        this.grade = grade;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Roll No: %d, Name: %s, Grade: %s", rollNumber, name, grade);
+    }
+}
+
+
+// Class.StudentManagementSystem
+package studentapp;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class StudentManagementSystem {
+    private List<Student> students;
+    private final String FILE_NAME = "students.dat";
+
+    public StudentManagementSystem() {
+        students = loadStudentsFromFile();
+    }
+
+    public void addStudent(Student student) {
+        students.add(student);
+        saveStudentsToFile();
+    }
+
+    public void removeStudent(int rollNumber) {
+        students.removeIf(s -> s.getRollNumber() == rollNumber);
+        saveStudentsToFile();
+    }
+
+    public Student findStudent(int rollNumber) {
+        for (Student s : students) {
+            if (s.getRollNumber() == rollNumber) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    public void updateStudent(int rollNumber, String newName, String newGrade) {
+        Student s = findStudent(rollNumber);
+        if (s != null) {
+            s.setName(newName);
+            s.setGrade(newGrade);
+            saveStudentsToFile();
+        }
+    }
+
+    public void listAllStudents() {
+        if (students.isEmpty()) {
+            System.out.println("No student records available.");
+        } else {
+            for (Student s : students) {
+                System.out.println(s);
+            }
+        }
+    }
+
+    private void saveStudentsToFile() {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            out.writeObject(students);
+        } catch (IOException e) {
+            System.out.println("Error saving students: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Student> loadStudentsFromFile() {
+        File file = new File(FILE_NAME);
+        if (!file.exists()) return new ArrayList<>();
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
+            return (List<Student>) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading students: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+}
+
+
+// main. java
+package studentapp;
+
+import java.util.Scanner;
+
+public class Main {
+    private static final Scanner scanner = new Scanner(System.in);
+    private static final StudentManagementSystem sms = new StudentManagementSystem();
+
+    public static void main(String[] args) {
+        int choice;
+        do {
+            showMenu();
+            choice = getIntInput("Choose an option: ");
+            switch (choice) {
+                case 1 -> addStudent();
+                case 2 -> removeStudent();
+                case 3 -> searchStudent();
+                case 4 -> editStudent();
+                case 5 -> sms.listAllStudents();
+                case 6 -> System.out.println("Exiting application. Goodbye!");
+                default -> System.out.println("Invalid option. Please try again.");
+            }
+        } while (choice != 6);
+    }
+
+    private static void showMenu() {
+        System.out.println("\n=== Student Management System ===");
+        System.out.println("1. Add Student");
+        System.out.println("2. Remove Student");
+        System.out.println("3. Search Student");
+        System.out.println("4. Edit Student");
+        System.out.println("5. Display All Students");
+        System.out.println("6. Exit");
+    }
+
+    private static void addStudent() {
+        int roll = getIntInput("Enter Roll Number: ");
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter Name: ");
+        String name = scanner.nextLine().trim();
+        System.out.print("Enter Grade: ");
+        String grade = scanner.nextLine().trim();
+
+        if (!name.isEmpty() && !grade.isEmpty()) {
+            sms.addStudent(new Student(roll, name, grade));
+            System.out.println("Student added successfully.");
+        } else {
+            System.out.println("Name and Grade cannot be empty.");
+        }
+    }
+
+    private static void removeStudent() {
+        int roll = getIntInput("Enter Roll Number to Remove: ");
+        sms.removeStudent(roll);
+        System.out.println("Student removed if exists.");
+    }
+
+    private static void searchStudent() {
+        int roll = getIntInput("Enter Roll Number to Search: ");
+        Student s = sms.findStudent(roll);
+        if (s != null) {
+            System.out.println(s);
+        } else {
+            System.out.println("Student not found.");
+        }
+    }
+
+    private static void editStudent() {
+        int roll = getIntInput("Enter Roll Number to Edit: ");
+        scanner.nextLine(); // Consume newline
+        Student s = sms.findStudent(roll);
+        if (s != null) {
+            System.out.print("Enter New Name: ");
+            String newName = scanner.nextLine().trim();
+            System.out.print("Enter New Grade: ");
+            String newGrade = scanner.nextLine().trim();
+            sms.updateStudent(roll, newName, newGrade);
+            System.out.println("Student updated.");
+        } else {
+            System.out.println("Student not found.");
+        }
+    }
+
+    private static int getIntInput(String prompt) {
+        System.out.print(prompt);
+        while (!scanner.hasNextInt()) {
+            System.out.println("Invalid input. Enter a number.");
+            scanner.next();
+        }
+        return scanner.nextInt();
+    }
+}
+
+
