@@ -1,0 +1,49 @@
+ package CodeS;
+
+import java.util.Random;
+import java.util.Scanner;
+
+public class NumberGame {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Random random = new Random();
+        int numberToGuess;
+        int userGuess;
+        int attempts;
+        boolean playAgain = true;
+
+        while (playAgain) {
+            numberToGuess = random.nextInt(100) + 1;  
+            attempts = 0;  
+            System.out.println("Guess a number between 1 and 100:");
+
+            while (attempts < 5) {
+                userGuess = scanner.nextInt();  
+                attempts++;  
+
+                if (userGuess < numberToGuess) {
+                    System.out.println("Too low! Try again.");
+                } else if (userGuess > numberToGuess) {
+                    System.out.println("Too high! Try again.");
+                } else {
+                    System.out.println("Congratulations! You've guessed the number in " + attempts + " attempts.");
+                    break;  
+                }
+
+                if (attempts == 5) {
+                    System.out.println("Sorry, you've used all attempts. The number was: " + numberToGuess);
+                }
+            }
+
+            System.out.print("Do you want to play again? (yes/no): ");
+            String response = scanner.next();
+            playAgain = response.equalsIgnoreCase("yes");
+        }
+
+        scanner.close();
+    }
+}
+
+
+
+
